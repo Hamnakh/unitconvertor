@@ -1,7 +1,7 @@
 import streamlit as st
 
 
-st.set_page_config(page_title="Unit Converter", layout="centered")
+st.set_page_config(page_title="Package Calculator", layout="centered")
 
 
 st.markdown("""
@@ -127,207 +127,107 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-st.markdown("<h1>✨ Unit Converter ✨</h1>", unsafe_allow_html=True)
+st.markdown("<h1>📦 Ramazan Package Calculator 📦</h1>", unsafe_allow_html=True)
 
+# Define package items and their units
+package_items = {
+    "Flour": {"unit": "kg", "default": 5},
+    "Rice": {"unit": "kg", "default": 2},
+    "Sugar": {"unit": "kg", "default": 1},
+    "Cooking Oil": {"unit": "ltr", "default": 1},
+    "Dates": {"unit": "g", "default": 200},
+    "Tea": {"unit": "g", "default": 80},
+    "Chickpeas": {"unit": "kg", "default": 1},
+    "Dal Chana": {"unit": "kg", "default": 1},
+    "Vermicelli": {"unit": "g", "default": 150},
+    "Salt": {"unit": "g", "default": 800},
+    "Sharbat": {"unit": "ml", "default": 800}
+}
 
-with st.sidebar:
-    st.header("⚙️ Settings")
-    
-    # Theme selection
-    theme = st.selectbox(
-        "Choose Theme",
-        ["Light", "Dark"],
-        key="theme"
-    )
-    
-    # Temperature scale preference
-    temp_format = st.radio(
-        "Default Temperature Scale",
-        ["Celsius", "Fahrenheit", "Kelvin"],
-        key="temp_format"
-    )
-    
-    st.markdown("---")
-    st.markdown("""
-    ### Quick Reference
-    
-    🌡️ **Temperature**
-    - Water freezes at:
-        - 0°C
-        - 32°F
-        - 273.15K
-    - Water boils at:
-        - 100°C
-        - 212°F
-        - 373.15K
-    
-    ### About
-    This converter helps you convert between different units of measurement.
-    """)
-
-# Dark theme styling
-if theme == "Dark":
-    st.markdown("""
-    <style>
-        .main {
-            background: linear-gradient(135deg, #1E1E1E 0%, #2D3436 100%);
-            color: #ffffff;
-        }
-        h1 {
-            background: linear-gradient(120deg, #00ADB5, #00838F);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .success-message {
-            background: linear-gradient(to right, #00ADB5, #00838F);
-        }
-        .stButton>button {
-            background: linear-gradient(to right, #00ADB5, #00838F);
-        }
-        .stSelectbox > div > div {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        .stNumberInput > div > div > input {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        label {
-            color: #ffffff;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
-# Create a container with background
 with st.container():
     st.markdown('<div class="card">', unsafe_allow_html=True)
     
-    # Create conversion categories
-    conversion_type = st.selectbox(
-        "Select Conversion Type",
-        ["Length", "Weight", "Temperature"],
-        key="conversion_type"
+    # Package selection
+    package_type = st.selectbox(
+        "Select Package Type",
+        ["Basic Package", "Premium Package", "Custom Package"]
     )
 
-    # Input value with custom styling
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        input_value = st.number_input("Enter value to convert", value=0.0, key="input_value")
+    if package_type == "Custom Package":
+        st.subheader("Customize Your Package")
+        total_price = 0
+        selected_items = {}
 
-    # Conversion logic for Length
-    if conversion_type == "Length":
-        col1, col2 = st.columns(2)
-        with col1:
-            from_unit = st.selectbox("From", ["Meters", "Kilometers", "Miles", "Feet"])
-        with col2:
-            to_unit = st.selectbox("To", ["Meters", "Kilometers", "Miles", "Feet"])
-        
-        if st.button("Convert!", key="convert_length"):
-            # Convert everything to meters first
-            if from_unit == "Kilometers":
-                meters = input_value * 1000
-            elif from_unit == "Miles":
-                meters = input_value * 1609.34
-            elif from_unit == "Feet":
-                meters = input_value * 0.3048
-            else:
-                meters = input_value
-            
-            # Convert meters to target unit
-            if to_unit == "Kilometers":
-                result = meters / 1000
-            elif to_unit == "Miles":
-                result = meters / 1609.34
-            elif to_unit == "Feet":
-                result = meters / 0.3048
-            else:
-                result = meters
-                
+        for item, details in package_items.items():
+            col1, col2, col3 = st.columns([3, 2, 2])
+            with col1:
+                quantity = st.number_input(
+                    f"{item} ({details['unit']})", 
+                    value=float(details['default']),
+                    step=0.1
+                )
+            with col2:
+                price_per_unit = st.number_input(
+                    f"Price per {details['unit']}", 
+                    value=0.0,
+                    step=0.1
+                )
+            with col3:
+                item_total = quantity * price_per_unit
+                st.text(f"Total: Rs. {item_total:.2f}")
+                total_price += item_total
+                if quantity > 0:
+                    selected_items[item] = f"{quantity} {details['unit']}"
+
+        if st.button("Calculate Total"):
             st.markdown(f"""
             <div class="success-message">
-                {input_value} {from_unit} = {result:.2f} {to_unit}
+                <h3>Package Summary</h3>
+                <p>Selected Items:</p>
+                {"<br>".join([f"• {item}: {qty}" for item, qty in selected_items.items()])}
+                <h4>Total Price: Rs. {total_price:.2f}</h4>
             </div>
             """, unsafe_allow_html=True)
 
-    # Conversion logic for Weight
-    elif conversion_type == "Weight":
-        col1, col2 = st.columns(2)
-        with col1:
-            from_unit = st.selectbox("From", ["Kilograms", "Grams", "Pounds", "Ounces"])
-        with col2:
-            to_unit = st.selectbox("To", ["Kilograms", "Grams", "Pounds", "Ounces"])
-        
-        if st.button("Convert!", key="convert_weight"):
-            # Convert everything to kilograms first
-            if from_unit == "Grams":
-                kg = input_value / 1000
-            elif from_unit == "Pounds":
-                kg = input_value * 0.453592
-            elif from_unit == "Ounces":
-                kg = input_value * 0.0283495
-            else:
-                kg = input_value
-            
-            # Convert kilograms to target unit
-            if to_unit == "Grams":
-                result = kg * 1000
-            elif to_unit == "Pounds":
-                result = kg / 0.453592
-            elif to_unit == "Ounces":
-                result = kg / 0.0283495
-            else:
-                result = kg
-                
-            st.markdown(f"""
-            <div class="success-message">
-                {input_value} {from_unit} = {result:.2f} {to_unit}
-            </div>
-            """, unsafe_allow_html=True)
-
-    # Conversion logic for Temperature
     else:
-        col1, col2 = st.columns(2)
-        with col1:
-            # Set default temperature scale based on sidebar selection
-            temp_units = ["Celsius", "Fahrenheit", "Kelvin"]
-            # Move preferred temperature to the start of the list
-            temp_units.remove(temp_format)
-            temp_units.insert(0, temp_format)
-            from_unit = st.selectbox("From", temp_units)
-        with col2:
-            to_unit = st.selectbox("To", temp_units)
-        
-        if st.button("Convert!", key="convert_temp"):
-            # Convert everything to Celsius first
-            if from_unit == "Fahrenheit":
-                celsius = (input_value - 32) * 5/9
-            elif from_unit == "Kelvin":
-                celsius = input_value - 273.15
-            else:
-                celsius = input_value
-            
-            
-            if to_unit == "Fahrenheit":
-                result = (celsius * 9/5) + 32
-            elif to_unit == "Kelvin":
-                result = celsius + 273.15
-            else:
-                result = celsius
-                
-            st.markdown(f"""
-            <div class="success-message">
-                {input_value} {from_unit} = {result:.2f} {to_unit}
-            </div>
-            """, unsafe_allow_html=True)
+        # Pre-defined packages
+        if package_type == "Basic Package":
+            package_price = 2849
+            package_items_display = {
+                "Flour": "5 kg",
+                "Rice": "2 kg",
+                "Sugar": "1 kg",
+                "Cooking Oil": "1 ltr",
+                "Dal Chana": "1 kg",
+                "Tea": "80 g"
+            }
+        else:  # Premium Package
+            package_price = 4999
+            package_items_display = {
+                "Flour": "10 kg",
+                "Rice": "5 kg",
+                "Sugar": "2 kg",
+                "Cooking Oil": "2 ltr",
+                "Dal Chana": "2 kg",
+                "Tea": "160 g",
+                "Dates": "400 g",
+                "Sharbat": "1600 ml"
+            }
+
+        st.markdown(f"""
+        <div class="success-message">
+            <h3>{package_type}</h3>
+            <p>Package Contents:</p>
+            {"<br>".join([f"• {item}: {qty}" for item, qty in package_items_display.items()])}
+            <h4>Package Price: Rs. {package_price}</h4>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("""
 <div class='footer'>
-    Made with ❤️ by Hamna
+    Ramazan Mubarak! 🌙
 </div>
 """, unsafe_allow_html=True)
