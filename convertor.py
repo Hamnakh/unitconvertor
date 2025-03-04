@@ -46,5 +46,5 @@ def main():
     st.markdown("---")
     st.markdown("### Created by Hamna")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
